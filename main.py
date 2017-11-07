@@ -1,19 +1,27 @@
 import sys
+import smtplib
 
 def getRandomRecipientsFromFile() :
 	recipients = {};
-	recipients.update({"Mr. Vits" : "vszeni@gmail.com"})
-	recipients.update({"Mrs. Pipi" : "fernanda@almeidamarcon.com"})
-	
+
 	return recipients
 	
-def sendEmailToRecipient(recipients) :
+def sendEmailToRecipients(server,user,recipients) :
 	for r in recipients.keys() :
+		msg = 'Oi {}! Estou testando algumas coisas...'.format(r)
+		server.sendmail(user, recipients[r], msg)
 		print('E-mail was sent to {} at {}'.format(r, recipients[r]))
 
-def sendRandomEmail() :
+def sendRandomEmails(srv) :
 	recipients = getRandomRecipientsFromFile()
-	sendEmailToRecipient(recipients)
+	sendEmailToRecipients(srv,recipients)
+	
+def authenticateOnGmail(usr,pwd) :
+	server = smtplib.SMTP("smtp.gmail.com", 587)
+	server.ehlo()
+	server.starttls()
+	server.login(usr,pwd)
+	return server
 	
 
 def main(args):
@@ -23,6 +31,15 @@ def main(args):
 
 if __name__ == '__main__' :
 	print("Starting...")
-	sendRandomEmail()
+	
+	user = str(sys.argv[1])
+	password = str(sys.argv[2])
+	
+	server = authenticateOnGmail(user,password)
+	recipients = getRandomRecipientsFromFile()
+	sendEmailToRecipients(server,user,recipients)
+	
+	server.close()
+	
 	input("Press Enter to continue")
 	sys.exit(main(sys.argv))
