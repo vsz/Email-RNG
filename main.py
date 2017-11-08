@@ -24,14 +24,7 @@ def main(args):
 def getResponseByGenderCount(ws) :
 	m = ws['A3'].value
 	f = ws['B3'].value
-	'''
-	if mmf >= 0 :
-		m = 0
-		f = mmf
-	if mmf < 0 :
-		m = -mmf
-		f = 0
-	'''
+
 	return {'m':m , 'f':f}
 	
 def getRecipientCount(m_ws,f_ws) :
@@ -66,6 +59,20 @@ def drawRandomRecipients(recipients,num) :
 		del recipients[r]
 		
 	return selected_recipients
+
+def query_yes_no(msg) :
+	yes = {'yes','y','s','sim'}
+	no = {'no','n','nao'}
+	
+	while True :
+		choice = input(msg + " s/n ? ").lower()
+		
+		if choice in yes :
+			return True
+		if choice in no :
+			return False
+		else :
+			print("Escreva S ou N")
 
 if __name__ == '__main__' :
 	
@@ -121,16 +128,25 @@ if __name__ == '__main__' :
 			print("Escolha um número menor.")
 			
 	# Select female recipients
-	selected_female_recipients = drawRandomRecipients(available_female_recipients, num_desired_recipients['f'])
-	selected_male_recipients = drawRandomRecipients(available_male_recipients, num_desired_recipients['m'])
+	accepted = False
+	while accepted == False :
+		print(len(available_female_recipients))
+		print(len(available_male_recipients))
+		selected_female_recipients = drawRandomRecipients(available_female_recipients.copy(), num_desired_recipients['f'])
+		selected_male_recipients = drawRandomRecipients(available_male_recipients.copy(), num_desired_recipients['m'])
 	
-	print("Selected male recipients")
-	for r in selected_male_recipients :
-		print("{} {}".format(r,selected_male_recipients[r]))
-	
-	print("Selected female recipients")
-	for r in selected_female_recipients :
-		print("{} {}".format(r,selected_female_recipients[r]))
+		print("Homens selecionados:")
+		for r in selected_male_recipients :
+			print("{0:30} {1:40}".format(r,selected_male_recipients[r]))
+		
+		print("")
+		
+		print("Selected female recipients")
+		for r in selected_female_recipients :
+			print("{0:30} {1:40}".format(r,selected_female_recipients[r]))
+		
+		accepted = query_yes_no("Você aceita a seleção?")
+		
 	
 	
 	server = authenticateOnGmail(user,password)
