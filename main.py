@@ -17,9 +17,6 @@ def authenticateOnGmail(usr,pwd) :
 	server.starttls()
 	server.login(usr,pwd)
 	return server
-	
-def main(args):
-    return 0
 
 def getResponseByGenderCount(ws) :
 	m = ws['A3'].value
@@ -82,18 +79,13 @@ def query_yes_no(msg) :
 		else :
 			print("Escreva S ou N")
 
-if __name__ == '__main__' :
-	
-	'''
-
-	'''
-	
+def main(args):
 	print("Iniciando...")
-	'''
+	
 	# Parse login info
-	user = str(sys.argv[1])
-	password = str(sys.argv[2])
-	'''
+	user = str(args[1])
+	password = str(args[2])
+	
 	
 	# Load recipients file to memory
 	print("Carregando arquivo...")
@@ -149,7 +141,8 @@ if __name__ == '__main__' :
 	
 	input("Pressione qualquer tecla para enviar os e-mails aos sorteados.")	
 	
-	#server = authenticateOnGmail(user,password)
+	print("Autenticando e-mail...")
+	server = authenticateOnGmail(user,password)
 	
 	# Send to female recipients
 	print("Enviando para as mulheres...")
@@ -158,14 +151,20 @@ if __name__ == '__main__' :
 		updateRecipientTable(filename,wb,female_recipients_sheet,r)
 		print("E-mail enviado para {}. Tabela atualizada!".format(r))
 	
+	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
 		#sendEmailToRecipients(server,user,r)
 		updateRecipientTable(filename,wb,male_recipients_sheet,r)
 		print("E-mail enviado para {}. Tabela atualizada!".format(r))
 	
-	
+	print("Fechando conexão...")
 	#server.close()
 	
-	input("Press Enter to continue")
-	sys.exit(main(sys.argv))
+	input("Pronto! Pressione qualquer tecla para fechar.")
+
+
+
+if __name__ == '__main__' :
+	
+	main(sys.argv)
