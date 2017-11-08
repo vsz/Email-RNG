@@ -21,7 +21,7 @@ def authenticateOnGmail(usr,pwd) :
 def main(args):
     return 0
 
-def getResponseByGender(ws) :
+def getResponseByGenderCount(ws) :
 	m = ws['A3'].value
 	f = ws['B3'].value
 	'''
@@ -33,8 +33,15 @@ def getResponseByGender(ws) :
 		f = 0
 	'''
 	return {'m':m , 'f':f}
+	
+def getRecipientCount(m_ws,f_ws) :
+	m = m_ws.max_row-1
+	f = f_ws.max_row-1
+	
+	return {'m':m, 'f':f}
 
-def selectRecipients(ws, num) :
+
+def getAvailableRecipients(ws) :
 	# Get recipients that havent received an email yet
 	available_recipients = {}
 	
@@ -42,13 +49,21 @@ def selectRecipients(ws, num) :
 		if row[2].value == 0 :
 			available_recipients[row[0].value] = row[1].value
 			
+	return available_recipients
+
+def getAvailableRecipientCount(m_d,f_d) :
+	m = len(m_d)
+	f = len(f_d)
+	return {'m':m, 'f':f}
+
+def drawRandomRecipients(recipients,num) :
 	#Select random recipient from available
 	selected_recipients = {}
 	
 	for _ in range(0,int(num)) :
-		r = random.choice(list(available_recipients))
-		selected_recipients[r] = available_recipients[r]
-		del available_recipients[r]
+		r = random.choice(list(recipients))
+		selected_recipients[r] = recipients[r]
+		del recipients[r]
 		
 	return selected_recipients
 
@@ -65,39 +80,53 @@ if __name__ == '__main__' :
 	'''
 	
 	print("Iniciando...")
-	
+	'''
 	# Parse login info
 	user = str(sys.argv[1])
 	password = str(sys.argv[2])
-	
+	'''
 	
 	# Load recipients file to memory
 	print("Carregando arquivo...")
 	filename = 'emails.xlsx'
 	wb = load_workbook(filename)
+	geral_sheet = wb['Geral']
+	male_recipients_sheet = wb['H']
+	female_recipients_sheet = wb['M']
 	
+	# Get available recipients
+	available_male_recipients = getAvailableRecipients(male_recipients_sheet)
+	available_female_recipients = getAvailableRecipients(female_recipients_sheet)
 	
-	# Parse number of questionnaire responses by gender
-	num = getResponseByGender(wb['Geral'])
-	print("Há {} respostas de homens e {} respostas de mulheres.".format(num['m'], num['f']))
+	# Stats
+	num_response = getResponseByGenderCount(geral_sheet)
+	num_recipients = getRecipientCount(male_recipients_sheet,female_recipients_sheet)
+	num_available_recipients = getAvailableRecipientCount(available_male_recipients,available_female_recipients)
+	
+	print("Total cadastrados:             {0:4} Homens e {1:4} Mulheres.".format(num_recipients['m'], num_recipients['f']))
+	print("Total cadastrados disponíveis: {0:4} Homens e {1:4} Mulheres.".format(num_available_recipients['m'], num_available_recipients['f']))
+	print("Total respostas              : {0:4} Homens e {1:4} Mulheres.".format(num_response['m'], num_response['f']))
 
-
-	# Parse amount of recipients
-	num_male_recipients = input("Digite o numero de e-mails para mandar para homens: ")
-	num_female_recipients = input("Digite o numero de e-mails para mandar para mulheres: ")
-	input("Pressione Enter para mandar os e-mails!")
+	# Draw phase
+	num_desired_recipients = {}
 	
-	
-	# Select male recipients
-	selected_male_recipients = selectRecipients(wb['H'], num_male_recipients)
+	accepted = False
+	while accepted == False :
+		num_desired_recipients['m'] = int(input("Digite o numero de e-mails para mandar para homens: "))
+		num_desired_recipients['f'] = int(input("Digite o numero de e-mails para mandar para mulheres: "))
+		if num_desired_recipients['m']  <= num_available_recipients['m'] and  \
+			num_desired_recipients['f'] <= num_available_recipients['f'] :
+			accepted = True
+		else :
+			print("Escolha um número menor.")
+			
+	# Select female recipients
+	selected_female_recipients = drawRandomRecipients(available_female_recipients, num_desired_recipients['f'])
+	selected_male_recipients = drawRandomRecipients(available_male_recipients, num_desired_recipients['m'])
 	
 	print("Selected male recipients")
 	for r in selected_male_recipients :
 		print("{} {}".format(r,selected_male_recipients[r]))
-	
-	
-	# Select female recipients
-	selected_female_recipients = selectRecipients(wb['M'], num_female_recipients)
 	
 	print("Selected female recipients")
 	for r in selected_female_recipients :
