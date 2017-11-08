@@ -60,6 +60,14 @@ def drawRandomRecipients(recipients,num) :
 		
 	return selected_recipients
 
+def updateRecipientTable(fn,wb,ws,r) :
+	# Marks on excel table the selected recipients
+	for row in ws.iter_rows(min_row=2, min_col=1, max_row=ws.max_row, max_col=3) :
+		if row[0].value == r :
+			row[2].value = 1
+			
+	wb.save(fn)
+
 def query_yes_no(msg) :
 	yes = {'yes','y','s','sim'}
 	no = {'no','n','nao'}
@@ -77,13 +85,7 @@ def query_yes_no(msg) :
 if __name__ == '__main__' :
 	
 	'''
-	# Marks on excel table the selected recipients
-	for row in ws_h.iter_rows(min_row=2, min_col=1, max_row=ws_h.max_row, max_col=3) :
-		if row[0].value in selected_male_recipients :
-			print("Achei")
-			row[2].value = 1
-			
-	wb.save(filename)
+
 	'''
 	
 	print("Iniciando...")
@@ -130,8 +132,6 @@ if __name__ == '__main__' :
 	# Select female recipients
 	accepted = False
 	while accepted == False :
-		print(len(available_female_recipients))
-		print(len(available_male_recipients))
 		selected_female_recipients = drawRandomRecipients(available_female_recipients.copy(), num_desired_recipients['f'])
 		selected_male_recipients = drawRandomRecipients(available_male_recipients.copy(), num_desired_recipients['m'])
 	
@@ -146,13 +146,26 @@ if __name__ == '__main__' :
 			print("{0:30} {1:40}".format(r,selected_female_recipients[r]))
 		
 		accepted = query_yes_no("Você aceita a seleção?")
-		
+	
+	input("Pressione qualquer tecla para enviar os e-mails aos sorteados.")	
+	
+	#server = authenticateOnGmail(user,password)
+	
+	# Send to female recipients
+	print("Enviando para as mulheres...")
+	for r in selected_female_recipients :
+		#sendEmailToRecipients(server,user,r)
+		updateRecipientTable(filename,wb,female_recipients_sheet,r)
+		print("E-mail enviado para {}. Tabela atualizada!".format(r))
+	
+	print("Enviando para os homens...")
+	for r in selected_male_recipients :
+		#sendEmailToRecipients(server,user,r)
+		updateRecipientTable(filename,wb,male_recipients_sheet,r)
+		print("E-mail enviado para {}. Tabela atualizada!".format(r))
 	
 	
-	server = authenticateOnGmail(user,password)
-	#sendEmailToRecipients(server,user,recipients)
-	
-	server.close()
+	#server.close()
 	
 	input("Press Enter to continue")
 	sys.exit(main(sys.argv))
