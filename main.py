@@ -106,7 +106,7 @@ def main(args):
 	
 	print("Total cadastrados:             {0:4} Homens e {1:4} Mulheres.".format(num_recipients['m'], num_recipients['f']))
 	print("Total cadastrados disponíveis: {0:4} Homens e {1:4} Mulheres.".format(num_available_recipients['m'], num_available_recipients['f']))
-	print("Total respostas              : {0:4} Homens e {1:4} Mulheres.".format(num_response['m'], num_response['f']))
+	print("Total respostas:               {0:4} Homens e {1:4} Mulheres.".format(num_response['m'], num_response['f']))
 
 	# Draw phase
 	num_desired_recipients = {}
@@ -141,8 +141,8 @@ def main(args):
 	
 	input("Pressione qualquer tecla para enviar os e-mails aos sorteados.")	
 	
-	print("Autenticando e-mail...")
-	server = authenticateOnGmail(user,password)
+	print("Autenticando no servidor de e-mail...")
+	#server = authenticateOnGmail(user,password)
 	
 	# Send to female recipients
 	print("Enviando para as mulheres...")
