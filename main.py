@@ -1,15 +1,31 @@
 import sys
 import smtplib
 import random
+import time
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from openpyxl import Workbook
 from openpyxl import load_workbook
 
 	
-def sendEmailToRecipient(server,user,recipients) :
-	for r in recipients.keys() :
-		msg = 'Oi {}! Estou testando algumas coisas! Este software deve estar funcional em pouco tempo :)'.format(r)
-		server.sendmail(user, recipients[r], msg)
-		print('E-mail was sent to {} at {}'.format(r, recipients[r]))
+def sendEmailToRecipient(server,user,recipient,msg) :		
+	mail = createEmailMessage(user,recipient,msg)
+	try:
+		server.sendmail(user, recipient, mail.as_string())
+		return True
+	except smtplib.SMTPException:
+		return False
+			
+
+def createEmailMessage(user,recipient,msg) :
+	mail = MIMEText(msg)
+	mail['Subject'] = 'Pesquisa da Fernanda'
+	mail['From'] = user
+	mail['To'] = recipient
+
+
+	return mail
 	
 def authenticateOnGmail(usr,pwd) :
 	server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -95,6 +111,12 @@ def main(args):
 	male_recipients_sheet = wb['H']
 	female_recipients_sheet = wb['M']
 	
+	# Load message text to memory
+	textfile = 'mensagem.txt'
+	with open(textfile, 'rb') as fp:
+		msg = fp.read()
+	
+	
 	# Get available recipients
 	available_male_recipients = getAvailableRecipients(male_recipients_sheet)
 	available_female_recipients = getAvailableRecipients(female_recipients_sheet)
@@ -142,24 +164,35 @@ def main(args):
 	input("Pressione qualquer tecla para enviar os e-mails aos sorteados.")	
 	
 	print("Autenticando no servidor de e-mail...")
-	#server = authenticateOnGmail(user,password)
+	server = authenticateOnGmail(user,password)
 	
 	# Send to female recipients
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
-		#sendEmailToRecipients(server,user,r)
-		updateRecipientTable(filename,wb,female_recipients_sheet,r)
-		print("E-mail enviado para {}. Tabela atualizada!".format(r))
+		m = "Olá {}, \n".format(r) + str(msg)
+		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
+			updateRecipientTable(filename,wb,female_recipients_sheet,r)
+			print("E-mail enviado para {}. Tabela atualizada!".format(r))
+			time.sleep(5)
+		else :
+			print("Falha no envio. Você pode estar spammando. Tente de novo mais tarde.")
+			break
+			
 	
 	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
-		#sendEmailToRecipients(server,user,r)
-		updateRecipientTable(filename,wb,male_recipients_sheet,r)
-		print("E-mail enviado para {}. Tabela atualizada!".format(r))
+		m = "Olá {}, \n".format(r) + str(msg)
+		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
+			updateRecipientTable(filename,wb,female_recipients_sheet,r)
+			print("E-mail enviado para {}. Tabela atualizada!".format(r))
+			time.sleep(5)
+		else :
+			print("Falha no envio. Você pode estar spammando. Tente de novo mais tarde.")
+			break
 	
 	print("Fechando conexão...")
-	#server.close()
+	server.close()
 	
 	input("Pronto! Pressione qualquer tecla para fechar.")
 
