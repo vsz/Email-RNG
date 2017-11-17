@@ -3,14 +3,15 @@ import smtplib
 import random
 import time
 
+from bs4 import BeautifulSoup
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from openpyxl import Workbook
 from openpyxl import load_workbook
 
 	
-def sendEmailToRecipient(server,user,recipient,msg) :		
-	mail = createEmailMessage(user,recipient,msg)
+def sendEmailToRecipient(server,user,recipient,html) :		
+	mail = createEmailMessageFromHTML(user,recipient,html)
 	try:
 		server.sendmail(user, recipient, mail.as_string())
 		return True
@@ -18,14 +19,19 @@ def sendEmailToRecipient(server,user,recipient,msg) :
 		return False
 			
 
-def createEmailMessage(user,recipient,msg) :
-	mail = MIMEText(msg)
+def createEmailMessageFromHTML(user,recipient,html) :
+	mail = MIMEMultipart()
 	mail['Subject'] = 'Pesquisa da Fernanda'
 	mail['From'] = user
 	mail['To'] = recipient
-
+	msg = MIMEText(html, 'html')
+	mail.attach(msg)
 
 	return mail
+	
+def replaceNameInHTMLMessage(html,name) :
+	return html	
+
 	
 def authenticateOnGmail(usr,pwd) :
 	server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -114,8 +120,12 @@ def main(args):
 	# Load message text to memory
 	textfile = 'mensagem.txt'
 	with open(textfile, 'rb') as fp:
-		msg = fp.read()
+		textmsg = fp.read()
 	
+	# Load message html to memory
+	htmlfile = 'mensagem.html'
+	with open(htmlfile, 'r') as fp:
+		htmlmsg = fp.read()
 	
 	# Get available recipients
 	available_male_recipients = getAvailableRecipients(male_recipients_sheet)
@@ -169,7 +179,9 @@ def main(args):
 	# Send to female recipients
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
-		m = "Olá {}, \n".format(r) + str(msg)
+		name = "Professora " + r
+		print(name)
+		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
 			print("E-mail enviado para {}. Tabela atualizada!".format(r))
@@ -182,7 +194,9 @@ def main(args):
 	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
-		m = "Olá {}, \n".format(r) + str(msg)
+		name = "Professor " + r
+		print(name)
+		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
 			print("E-mail enviado para {}. Tabela atualizada!".format(r))
