@@ -30,7 +30,10 @@ def createEmailMessageFromHTML(user,recipient,html) :
 	return mail
 	
 def replaceNameInHTMLMessage(html,name) :
-	return html	
+	soup = BeautifulSoup(html,'lxml')
+	for i in soup.find_all(class_='greeting') :
+		i.string = "Olá, " + name
+	return str(soup)	
 
 	
 def authenticateOnGmail(usr,pwd) :
@@ -180,7 +183,6 @@ def main(args):
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
 		name = "Professora " + r
-		print(name)
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
@@ -195,7 +197,6 @@ def main(args):
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
 		name = "Professor " + r
-		print(name)
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
