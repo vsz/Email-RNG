@@ -62,7 +62,7 @@ def getAvailableRecipients(ws) :
 	
 	for row in ws.iter_rows(min_row=2, min_col=1, max_row=ws.max_row, max_col=3) :
 		if row[2].value == 0 :
-			available_recipients[row[0].value] = row[1].value
+			available_recipients[row[0].value.lower().title().strip()] = row[1].value.lower().strip()
 			
 	return available_recipients
 
@@ -116,9 +116,9 @@ def main(args):
 	print("Carregando arquivo...")
 	filename = 'emails.xlsx'
 	wb = load_workbook(filename)
-	geral_sheet = wb['Geral']
-	male_recipients_sheet = wb['H']
-	female_recipients_sheet = wb['M']
+	geral_sheet = wb['GERAL']
+	male_recipients_sheet = wb['HOMENS']
+	female_recipients_sheet = wb['MULHERES']
 	
 	# Load message text to memory
 	textfile = 'mensagem.txt'
@@ -164,13 +164,13 @@ def main(args):
 	
 		print("Homens selecionados:")
 		for r in selected_male_recipients :
-			print("{0:30} {1:40}".format(r,selected_male_recipients[r]))
+			print("{0:50} {1:40}".format(r,selected_male_recipients[r]))
 		
 		print("")
 		
 		print("Selected female recipients")
 		for r in selected_female_recipients :
-			print("{0:30} {1:40}".format(r,selected_female_recipients[r]))
+			print("{0:50} {1:40}".format(r,selected_female_recipients[r]))
 		
 		accepted = query_yes_no("Você aceita a seleção?")
 	
@@ -182,7 +182,7 @@ def main(args):
 	# Send to female recipients
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
-		name = "Professora " + r.lower().title().split()[0] + "!"
+		name = "Professora " + r.split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
@@ -196,7 +196,7 @@ def main(args):
 	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
-		name = "Professor " + r.lower().title().split()[0] + "!"
+		name = "Professor " + r.split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
