@@ -11,9 +11,9 @@ from openpyxl import load_workbook
 
 	
 def sendEmailToRecipient(server,user,recipient,html) :		
-	mail = createEmailMessageFromHTML(user,recipient,html)
+	mail = createEmailMessageFromHTML(user,recipient.strip(),html)
 	try:
-		server.sendmail(user, recipient, mail.as_string())
+		server.sendmail(user, recipient.strip(), mail.as_string())
 		return True
 	except smtplib.SMTPException:
 		return False
@@ -182,7 +182,7 @@ def main(args):
 	# Send to female recipients
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
-		name = "Professora " + r
+		name = "Professora " + r.lower().title().split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
@@ -196,7 +196,7 @@ def main(args):
 	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
-		name = "Professor " + r
+		name = "Professor " + r.lower().title().split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
