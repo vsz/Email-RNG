@@ -10,10 +10,11 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 
 	
-def sendEmailToRecipient(server,user,recipient,html) :		
-	mail = createEmailMessageFromHTML(user,recipient.strip(),html)
+def sendEmailToRecipient(server,user,recipient,html) :
+	r = recipient.strip()		
+	mail = createEmailMessageFromHTML(user,r,html)
 	try:
-		server.sendmail(user, recipient.strip(), mail.as_string())
+		server.sendmail(user,r, mail.as_string())
 		return True
 	except smtplib.SMTPException:
 		return False
@@ -62,7 +63,7 @@ def getAvailableRecipients(ws) :
 	
 	for row in ws.iter_rows(min_row=2, min_col=1, max_row=ws.max_row, max_col=3) :
 		if row[2].value == 0 :
-			available_recipients[row[0].value.lower().title().strip()] = row[1].value.lower().strip()
+			available_recipients[row[0].value] = row[1].value
 			
 	return available_recipients
 
@@ -164,13 +165,13 @@ def main(args):
 	
 		print("Homens selecionados:")
 		for r in selected_male_recipients :
-			print("{0:50} {1:40}".format(r,selected_male_recipients[r]))
+			print("{0:50} {1:40}".format(r.lower().title().strip(),selected_male_recipients[r].lower().strip()))
 		
 		print("")
 		
 		print("Selected female recipients")
 		for r in selected_female_recipients :
-			print("{0:50} {1:40}".format(r,selected_female_recipients[r]))
+			print("{0:50} {1:40}".format(r.lower().title().strip(),selected_female_recipients[r].lower().strip()))
 		
 		accepted = query_yes_no("Você aceita a seleção?")
 	
@@ -182,11 +183,11 @@ def main(args):
 	# Send to female recipients
 	print("Enviando para as mulheres...")
 	for r in selected_female_recipients :
-		name = "Professora " + r.split()[0] + "!"
+		name = "Professora " + r.lower().title().split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_female_recipients[r],m) :
 			updateRecipientTable(filename,wb,female_recipients_sheet,r)
-			print("E-mail enviado para {}. Tabela atualizada!".format(r))
+			print("E-mail enviado para {}. Tabela atualizada!".format(r.lower().title().strip()))
 			time.sleep(5)
 		else :
 			print("Falha no envio. Você pode estar spammando. Tente de novo mais tarde.")
@@ -196,11 +197,11 @@ def main(args):
 	# Send to male recipients
 	print("Enviando para os homens...")
 	for r in selected_male_recipients :
-		name = "Professor " + r.split()[0] + "!"
+		name = "Professor " + r.lower().title().split()[0] + "!"
 		m = replaceNameInHTMLMessage(htmlmsg,name)
 		if sendEmailToRecipient(server,user,selected_male_recipients[r],m) :
-			updateRecipientTable(filename,wb,female_recipients_sheet,r)
-			print("E-mail enviado para {}. Tabela atualizada!".format(r))
+			updateRecipientTable(filename,wb,male_recipients_sheet,r)
+			print("E-mail enviado para {}. Tabela atualizada!".format(r.lower().title().strip()))
 			time.sleep(5)
 		else :
 			print("Falha no envio. Você pode estar spammando. Tente de novo mais tarde.")
