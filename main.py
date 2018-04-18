@@ -121,10 +121,6 @@ def main(args):
 	male_recipients_sheet = wb['HOMENS']
 	female_recipients_sheet = wb['MULHERES']
 	
-	# Load message text to memory
-	textfile = 'mensagem.txt'
-	with open(textfile, 'rb') as fp:
-		textmsg = fp.read()
 	
 	# Load message html to memory
 	htmlfile = 'mensagem.html'
